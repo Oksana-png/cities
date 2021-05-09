@@ -329,9 +329,11 @@ const data = {
 };
 
 const renderListDefault = () => {
+  const list = document.querySelector('.dropdown-lists__list--default');
   const listDefault = document.querySelector(
     ".dropdown-lists__list--default>.dropdown-lists__col"
   );
+  list.style.display = 'block';
   const dataS = data.RU;
   dataS.forEach((item) => {
     let cities, country, count;
@@ -363,7 +365,7 @@ const renderListDefault = () => {
           blockDefault.insertAdjacentHTML(
             "beforeend",
             `
-						<div class="dropdown-lists__line">
+						<div class="dropdown-lists__line" data-path-link="${item.link}">
               <div class="dropdown-lists__city">
                 ${item.name}
               </div>
@@ -389,11 +391,15 @@ const selectSitiesCount = (arr) => {
 const renderListSelect = (t) => {
   const listSelect = document.querySelector(".dropdown-lists__list--select");
   const listSelectBlock = listSelect.querySelector(".dropdown-lists__col");
-  if (listSelect.style.display === "block") {
+  if (
+    listSelect.style.display === "block" &&
+    t.closest(".dropdown-lists__list--select")
+  ) {
     listSelectBlock.innerHTML = "";
     listSelect.style.display = "none";
     return;
   }
+  listSelectBlock.innerHTML = "";
   let city;
   if (t.classList.contains("dropdown-lists__country")) {
     city = t.textContent;
@@ -422,7 +428,7 @@ const renderListSelect = (t) => {
       item.cities.forEach((elem) => {
         listSelectBlock.insertAdjacentHTML(
           "beforeend",
-          `<div class="dropdown-lists__line">
+          `<div class="dropdown-lists__line" data-path-link="${elem.link}">
             <div class="dropdown-lists__city">${elem.name}</div>
             <div class="dropdown-lists__count">${elem.count}</div>
           </div>`
@@ -431,16 +437,90 @@ const renderListSelect = (t) => {
     }
   });
 };
+const search = () => {
+  const searchInput = document.getElementById('select-cities');
+  const listSearch = document.querySelector('.dropdown-lists__list--autocomplete');
+  const listSearchBlock = listSearch.querySelector('.dropdown-lists__countryBlock');
+  const listDefault = document.querySelector('.dropdown-lists__list--default'),
+    listSelect = document.querySelector('.dropdown-lists__list--select'),
+    buttonWiki = document.querySelector('.button');
 
+  const dataRU = data.RU;
+  listSearchBlock.innerHTML = '';
+  listDefault.style.display = 'none';
+  listSelect.style.display = 'none';
+  listSearch.style.display = 'block';
+  dataRU.forEach(item => {
+    item.cities.forEach(city => {
+      if (searchInput.value.toLowerCase() === city.name.slice(0, searchInput.value.length).toLowerCase() && searchInput.value.trim()) {
+        listSearchBlock.insertAdjacentHTML('beforeend', `
+          <div class="dropdown-lists__line" data-path-link="${city.link}">
+            <div class="dropdown-lists__city">${city.name}</div>
+            <div class="dropdown-lists__count">${city.count}</div>
+          </div>
+        `);
+      }
+    });
+  });
+  if (listSearchBlock.childNodes.length === 0) {
+    listSearchBlock.innerHTML = '<div class="dropdown-lists__line">Ничего не найдено</div>';
+  }
+  if (!searchInput.value.trim() ) {
+    buttonWiki.setAttribute('disabled', true);
+    buttonWiki.setAttribute('href', '#');
+
+    listSearch.style.display = 'none';
+    listDefault.style.display = 'block';
+  } 
+};
+const includePuthButton = (target) => {
+  const createCloseBtn = () => {
+    const input = document.getElementById('select-cities');
+    input.focus();
+    search();
+    input.value = target.querySelector('.dropdown-lists__city').textContent.trim();
+    const buttonClose = document.querySelector('.close-button');
+    buttonClose.style.display = 'block';
+    input.append()
+  };
+  if (!target.classList.contains('dropdown-lists__line')) {
+    target = target.parentElement;
+  }
+  const buttonWiki = document.querySelector('.button');
+  const puth = target.dataset.pathLink;
+  buttonWiki.setAttribute('disabled', false);
+  buttonWiki.setAttribute('href', puth);
+  createCloseBtn();
+  search();
+};
 const init = () => {
-  const buttonInput = document.getElementById("select-cities");
-  buttonInput.addEventListener("click", renderListDefault);
-
+  const searchInput = document.getElementById('select-cities');
+  searchInput.addEventListener("click", renderListDefault);
+  searchInput.addEventListener('input', search);
   document.addEventListener("click", (e) => {
     const target = e.target;
-    e.preventDefault();
+    if (target.closest('.dropdown-lists__line')) {
+      includePuthButton(target);
+    }
     if (target.closest(".dropdown-lists__total-line")) {
       renderListSelect(target);
+    }
+    if (target.closest('.close-button')) {
+      const buttonWiki = document.querySelector('.button'),
+        closeButton = document.querySelector('.close-button'),
+        listRemoved = document.querySelector('.dropdown-lists__list--autocomplete');
+      searchInput.value = '';
+      closeButton.style.display = 'none';
+      listRemoved.style.display = 'none';
+      renderListDefault();
+      buttonWiki.setAttribute('href', '#');
+      buttonWiki.setAttribute('disabled', true);
+    }
+  });
+  document.addEventListener("blur", (e) => {
+    const target = e.target;
+    if (target.closest('.dropdown-lists__line')) {
+      includePuthButton(target);
     }
   });
 };
