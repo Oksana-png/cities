@@ -473,6 +473,16 @@ const includePuthButton = (target) => {
   createCloseBtn();
   search();
 };
+// получение данных
+const dataRetrieval = (lang) => {
+  fetch(`http://localhost:3000/${lang}`)
+    .then((responce) => {
+      return responce.json();
+    })
+    .then((data) => {
+      console.log(data);
+    });
+};
 const init = () => {
   const searchInput = document.getElementById("select-cities");
   searchInput.addEventListener("click", renderListDefault);
@@ -499,6 +509,18 @@ const init = () => {
       buttonWiki.setAttribute("disabled", true);
     }
   });
+  const getLang = () => {
+    if (document.cookie) {
+      const regLang = /(RU)|(EN)|(DE)/;
+      const val = document.cookie.match(regLang)[0];
+      dataRetrieval(val);
+      return;
+    }
+    const lang = prompt("Введите вашу локаль: RU, EN или DE");
+    document.cookie = `lang=${lang}`;
+  };
+  getLang();
+
   // document.addEventListener("blur", (e) => {
   //   const target = e.target;
   //   if (target.closest('.dropdown-lists__line')) {
