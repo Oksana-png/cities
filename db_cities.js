@@ -313,25 +313,26 @@ const renderListDefault = () => {
         count = item[value];
       }
     }
-    if (langs === "RU" && item.country === "Россия") {
-      console.log("РУ");
-    } else if (langs === "EN" && item.country === "United Kingdom") {
-      console.log("item");
-    } else if (langs === "DE" && item.country === "Deutschland") {
-      console.log("ДЕ");
-    }
     const blockDefault = document.createElement("div");
     blockDefault.classList.add("dropdown-lists__countryBlock");
     blockDefault.innerHTML = `
 		<div class="dropdown-lists__total-line">
-      <div class="dropdown-lists__country">${country}</div>
-      <div class="dropdown-lists__count">${count}</div>
+    <div class="dropdown-lists__country">${country}</div>
+    <div class="dropdown-lists__count">${count}</div>
     </div>`;
-    // получение и вывод наибольших городов
+
     let arr = selectSitiesCount(cities);
     arr = arr.slice(0, 3);
-    listDefault.append(blockDefault);
 
+    if (langs === "RU" && item.country === "Россия") {
+      listDefault.prepend(blockDefault);
+    } else if (langs === "EN" && item.country === "United Kingdom") {
+      listDefault.prepend(blockDefault);
+    } else if (langs === "DE" && item.country === "Deutschland") {
+      listDefault.prepend(blockDefault);
+    } else {
+      listDefault.append(blockDefault);
+    }
     cities.forEach((item) => {
       arr.forEach((i) => {
         if (+item.count === i) {
