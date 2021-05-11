@@ -285,7 +285,9 @@ const data = {
     },
   ],
 };
-
+("use strict");
+let dataLang;
+let langs;
 const renderListDefault = () => {
   const searchInput = document.querySelector("#select-cities");
   const list = document.querySelector(".dropdown-lists__list--default");
@@ -299,8 +301,7 @@ const renderListDefault = () => {
     return;
   }
   list.style.display = "block";
-  const dataS = data.RU;
-  dataS.forEach((item) => {
+  dataLang.forEach((item) => {
     let cities, country, count;
 
     for (let value in item) {
@@ -311,6 +312,13 @@ const renderListDefault = () => {
       } else if (value === "count") {
         count = item[value];
       }
+    }
+    if (langs === "RU" && item.country === "Россия") {
+      console.log("РУ");
+    } else if (langs === "EN" && item.country === "United Kingdom") {
+      console.log("item");
+    } else if (langs === "DE" && item.country === "Deutschland") {
+      console.log("ДЕ");
     }
     const blockDefault = document.createElement("div");
     blockDefault.classList.add("dropdown-lists__countryBlock");
@@ -374,13 +382,11 @@ const renderListSelect = (t) => {
     city = t.querySelector(".dropdown-lists__country").textContent;
   }
 
-  const dataRU = data.RU;
-
   listSelect.style.display = "block";
 
   const blockSelect = document.createElement("div");
   blockSelect.classList.add("dropdown-lists__countryBlock");
-  dataRU.forEach((item) => {
+  dataLang.forEach((item) => {
     if (item.country === city) {
       listSelectBlock.insertAdjacentHTML(
         "beforeend",
@@ -414,12 +420,11 @@ const search = () => {
     listSelect = document.querySelector(".dropdown-lists__list--select"),
     buttonWiki = document.querySelector(".button");
 
-  const dataRU = data.RU;
   listSearchBlock.innerHTML = "";
   listDefault.style.display = "none";
   listSelect.style.display = "none";
   listSearch.style.display = "block";
-  dataRU.forEach((item) => {
+  dataLang.forEach((item) => {
     item.cities.forEach((city) => {
       if (
         searchInput.value.toLowerCase() ===
@@ -466,8 +471,6 @@ const includePuthButton = (target) => {
   }
   const buttonWiki = document.querySelector(".button");
   const puth = target.dataset.pathLink;
-  console.log(puth);
-  console.log(buttonWiki);
   buttonWiki.setAttribute("href", puth);
   buttonWiki.setAttribute("disabled", false);
   createCloseBtn();
@@ -477,13 +480,61 @@ const includePuthButton = (target) => {
 const dataRetrieval = (lang) => {
   fetch(`http://localhost:3000/${lang}`)
     .then((responce) => {
+      if (responce.status !== 200) {
+        throw new Error("status network not 200");
+      }
       return responce.json();
     })
-    .then((data) => {
-      console.log(data);
+    .then((responce) => {
+      localStorage.setItem(lang, JSON.stringify(responce));
+      dataLang = responce;
+      loaderDelete();
+    })
+    .catch((error) => {
+      console.error(error);
     });
 };
+const createLoader = () => {
+  const loader = document.createElement("div");
+  loader.classList.add("overlay-loader");
+  loader.innerHTML = `
+      <div class="loader">
+        <div class="colu col_1"></div>
+        <div class="colu col_2"></div>
+        <div class="colu col_3"></div>
+        <div class="colu col_4"></div>
+        <div class="colu col_5"></div>
+        <div class="colu col_6"></div>
+        <div class="colu col_7"></div>
+        <div class="colu col_8"></div>
+      </div>
+    `;
+  document.body.append(loader);
+};
+const loaderDelete = () => {
+  const loader = document.querySelector(".overlay-loader");
+  loader.remove();
+};
 const init = () => {
+  const getLang = () => {
+    if (document.cookie) {
+      const regLang = /(RU)|(EN)|(DE)/;
+      const val = document.cookie.match(regLang)[0];
+      dataLang = JSON.parse(localStorage.getItem(val));
+      loaderDelete();
+      langs = val;
+      return;
+    }
+    const lang = prompt("Введите вашу локаль: RU, EN или DE");
+    const regLang = /(RU)|(EN)|(DE)/;
+    document.cookie = `lang=${lang}`;
+    const val = document.cookie.match(regLang)[0];
+    langs = val;
+    dataRetrieval(val);
+  };
+  createLoader();
+  getLang();
+
   const searchInput = document.getElementById("select-cities");
   searchInput.addEventListener("click", renderListDefault);
   searchInput.addEventListener("input", search);
@@ -509,17 +560,6 @@ const init = () => {
       buttonWiki.setAttribute("disabled", true);
     }
   });
-  const getLang = () => {
-    if (document.cookie) {
-      const regLang = /(RU)|(EN)|(DE)/;
-      const val = document.cookie.match(regLang)[0];
-      dataRetrieval(val);
-      return;
-    }
-    const lang = prompt("Введите вашу локаль: RU, EN или DE");
-    document.cookie = `lang=${lang}`;
-  };
-  getLang();
 
   // document.addEventListener("blur", (e) => {
   //   const target = e.target;
