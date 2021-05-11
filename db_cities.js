@@ -365,6 +365,8 @@ const selectSitiesCount = (arr) => {
 const renderListSelect = (t) => {
   const listSelect = document.querySelector(".dropdown-lists__list--select");
   const listSelectBlock = listSelect.querySelector(".dropdown-lists__col");
+  const block = document.querySelector(".dropdown");
+  block.style.overflowX = "hidden";
   if (
     listSelect.style.display === "block" &&
     t.closest(".dropdown-lists__list--select")
@@ -408,6 +410,21 @@ const renderListSelect = (t) => {
       });
     }
   });
+  const animation = requestAnimationFrame(anim);
+  function anim() {
+    let count = 0;
+    const timer = setInterval(() => {
+      if (count < block.scrollWidth) {
+        count += 10;
+        block.scrollLeft = count;
+      } else {
+        block.scrollLeft = block.scrollWidth;
+        clearInterval(timer);
+        cancelAnimationFrame(animation);
+      }
+    }, 10);
+  }
+  block.scrollTop = 0;
 };
 const search = () => {
   const searchInput = document.getElementById("select-cities");
@@ -561,13 +578,6 @@ const init = () => {
       buttonWiki.setAttribute("disabled", true);
     }
   });
-
-  // document.addEventListener("blur", (e) => {
-  //   const target = e.target;
-  //   if (target.closest('.dropdown-lists__line')) {
-  //     includePuthButton(target);
-  //   }
-  // });
 };
 
 init();

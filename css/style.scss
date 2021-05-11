@@ -103,9 +103,14 @@ body {
             width: 100%;
             &--select{
                 display: none;
+                transform: translateX(0px);
+                flex-shrink: 0;
             }
             &--autocomplete{
                 display: none;
+            }
+            &--default{
+                flex-shrink: 0;
             }
         }
         &__total-line, &__line{
